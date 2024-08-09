@@ -11,12 +11,15 @@ void error(char * msg) {
 }
 
 void read_and_print(int sockfd) {
-  char buffer[256];
-  int n = read(sockfd, buffer, 255);
+  int n = 0;
+  do{
+  char buffer[256] = {0};
+  n = read(sockfd, buffer, 255);
   if(n < 0) {
     error("ERROR reading from the socket");
   }
-  printf("%s\n", buffer);
+  printf("%s", buffer);
+  } while(n == 255);
 }
 
 int main(int argc, char ** argv) {
