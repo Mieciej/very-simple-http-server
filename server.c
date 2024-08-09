@@ -4,27 +4,85 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <string.h>
 
 void error(char * msg) {
   perror(msg);
   exit(1);
 }
-
-void read_and_print(int sockfd) {
-  int n = 0;
-  do {
-  char buffer[256] = {0};
-  n = read(sockfd, buffer, 255);
-  if(n < 0) {
-    error("ERROR reading from the socket");
-  }
-  printf("%s", buffer);
-  } while(n == 255);
-  char hello[256]=  "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nContent-Lenght: 20\r\n\r\n<html><body><h1>Kocham Natalke</h1></body></html>";
-  n = write(sockfd,hello,sizeof(hello));
+void not_found(int sockfd) {
+  char response[256]=  "HTTP/1.0 404 Not Found";
+  int n = write(sockfd,response,sizeof(response));
   if(n < 0) {
     error("ERROR writing to the socket");
   }
+}
+void response_html(int sockfd, char* location) {
+    FILE * f  = fopen(location,"r");
+    if(f == NULL) {
+      fprintf(stderr, "Failed to open %s\n",location);
+      not_found(sockfd);
+      return;
+    }
+    
+    fseek (f, 0, SEEK_END);
+    size_t length = ftell (f);
+    fseek (f, 0, SEEK_SET);
+    char *buffer = malloc (length);
+    fread (buffer, 1, length, f);
+    fclose (f);
+    char response[256];
+    sprintf(response, "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nContent-Length: %ld\r\n\r\n", length);
+    int n = write(sockfd,response,strlen(response));
+    if(n < 0) {
+      error("ERROR writing to the socket");
+    }
+    n = write(sockfd,buffer,length);
+    if(n < 0) {
+      error("ERROR writing to the socket");
+    }
+    
+}
+void read_and_print(int sockfd) {
+  int n = 0;
+  const size_t buffer_len = 512;
+  char *buffer = NULL;
+  buffer = malloc(buffer_len);
+  n = read(sockfd, buffer, buffer_len-1);
+  if(n < 0) {
+    error("ERROR reading from the socket");
+  }
+
+  printf("%s\n",buffer);
+  char * token;
+  token = strtok(buffer, " \n");
+  if(strcmp(token, "GET") !=0 ) {
+    char response[256]=  "HTTP/1.0 501 Not Implemented";
+    n = write(sockfd,response,sizeof(response));
+    free(buffer);
+    if(n < 0) {
+      error("ERROR writing to the socket");
+    }
+    return;
+  }
+  token = strtok(NULL, " \n");
+  if(strcmp(token, "/") == 0) {
+    free(buffer);
+    response_html(sockfd,"res/index.html");
+    return;
+
+  } else if (token != NULL){
+
+    char location[256];
+    sprintf(location,"res%s",token);
+    free(buffer);
+    response_html(sockfd,location);
+    return;
+
+  }
+
+  free(buffer);
+
 }
 
 int main(int argc, char ** argv) {
