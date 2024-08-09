@@ -12,7 +12,7 @@ void error(char * msg) {
 
 void read_and_print(int sockfd) {
   int n = 0;
-  do{
+  do {
   char buffer[256] = {0};
   n = read(sockfd, buffer, 255);
   if(n < 0) {
@@ -20,6 +20,11 @@ void read_and_print(int sockfd) {
   }
   printf("%s", buffer);
   } while(n == 255);
+  char hello[256]=  "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nContent-Lenght: 20\r\n\r\n<html><body><h1>Kocham Natalke</h1></body></html>";
+  n = write(sockfd,hello,sizeof(hello));
+  if(n < 0) {
+    error("ERROR writing to the socket");
+  }
 }
 
 int main(int argc, char ** argv) {
