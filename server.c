@@ -90,8 +90,8 @@ int main(int argc, char ** argv) {
   char buffer[256] = {0};
   struct sockaddr_in serv_addr = {'\0'}, cli_addr = {'\0'};
 
-  if(argc < 2) {
-    fprintf(stderr, "Too few arguments; No port number provided.\n");
+  if(argc != 2) {
+    fprintf(stderr, "Usage: %s <portno>\n", argv[0]);
     exit(1);
   }
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
