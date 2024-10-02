@@ -17,7 +17,7 @@ void not_found(int sockfd) {
     error("ERROR writing to the socket");
   }
 }
-void response_html(int sockfd, char* location) {
+void send_response(int sockfd, char* location, char* content_type) {
     FILE * f  = fopen(location,"r");
     if(f == NULL) {
       fprintf(stderr, "Failed to open %s\n",location);
@@ -32,7 +32,7 @@ void response_html(int sockfd, char* location) {
     fread (buffer, 1, length, f);
     fclose (f);
     char response[256];
-    sprintf(response, "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nContent-Length: %ld\r\n\r\n", length);
+    sprintf(response, "HTTP/1.0 200 OK\r\nContent-Type: %s\r\nContent-Length: %ld\r\n\r\n", content_type, length);
     int n = write(sockfd,response,strlen(response));
     if(n < 0) {
       error("ERROR writing to the socket");
@@ -43,6 +43,7 @@ void response_html(int sockfd, char* location) {
     }
     
 }
+
 void read_and_print(int sockfd) {
   int n = 0;
   const size_t buffer_len = 512;
@@ -68,15 +69,19 @@ void read_and_print(int sockfd) {
   token = strtok(NULL, " \n");
   if(strcmp(token, "/") == 0) {
     free(buffer);
-    response_html(sockfd,"res/index.html");
+    send_response(sockfd,"res/index.html", "text/html");
     return;
 
   } else if (token != NULL){
 
     char location[256];
     sprintf(location,"res%s",token);
+    if(strstr(token, ".html")) {
+        send_response(sockfd,location, "text/html");
+    } else if (strstr(token, ".jpg")){
+        send_response(sockfd,location, "image/jpg");
+    }
     free(buffer);
-    response_html(sockfd,location);
     return;
 
   }
