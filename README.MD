@@ -1,5 +1,5 @@
 # Very Simple HTTP server implemented in C.
-Currently it only supports html files as responses, which have to be contained in ./res directory.
+Currently it only supports `HTML` and `JPG` files as responses, which have to be contained in ./res directory.
 
 ## Usage
 
@@ -10,5 +10,5 @@ gcc -o server server.c
 
 Start server using:
 ```
-./server portno
+./server <portno>
 ```
