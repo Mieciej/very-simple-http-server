@@ -82,6 +82,8 @@ void read_and_print(int sockfd) {
         send_response(sockfd, location, "image/jpg");
     } else if (strstr(token, ".css")){
         send_response(sockfd, location, "text/css");
+    } else if (strstr(token, ".js")){
+        send_response(sockfd, location, "text/css");
     }
     free(buffer);
     return;
