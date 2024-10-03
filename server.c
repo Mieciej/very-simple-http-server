@@ -77,9 +77,11 @@ void read_and_print(int sockfd) {
     char location[256];
     sprintf(location,"res%s",token);
     if(strstr(token, ".html")) {
-        send_response(sockfd,location, "text/html");
+        send_response(sockfd, location, "text/html");
     } else if (strstr(token, ".jpg")){
-        send_response(sockfd,location, "image/jpg");
+        send_response(sockfd, location, "image/jpg");
+    } else if (strstr(token, ".css")){
+        send_response(sockfd, location, "text/css");
     }
     free(buffer);
     return;
